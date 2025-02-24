@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机生成数字（从输入的数字中选择）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .output {
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+        }
+        .code-output {
+            background-color: #f4f4f4;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>随机生成数字（从输入的数字中选择）</h1>
+
+        <!-- 输入数字 -->
+        <label for="inputNumbers">请输入数字（用空格分隔，例：1 2 3 5 10 15 33 35 36）：</label>
+        <textarea id="inputNumbers" rows="2" placeholder="例如：1 2 3 5 10 15 33 35 36"></textarea><br/>
+
+        <!-- 输入要排除的数字 -->
+        <label for="excludeNumbers">请输入要排除的数字（用空格分隔）：</label>
+        <textarea id="excludeNumbers" rows="2" placeholder="例如：5 33"></textarea><br/>
+
+        <!-- 输入生成的数量 -->
+        <label for="quantity">请输入要生成的数字数量：</label>
+        <input type="number" id="quantity" placeholder="生成的数字数量" min="1" /><br/>
+
+        <button onclick="generateRandomNumbers()">生成随机数字</button>
+
+        <!-- 显示结果 -->
+        <div class="output">
+            <h3>一共输入的数字：</h3>
+            <p id="numberCount"></p>
+
+            <h3>生成的随机数字：</h3>
+            <p id="randomNumbersOutput"></p>
+
+            <h3>排除的数字：</h3>
+            <p id="excludedNumbersOutput"></p>
+
+            <p class="error" id="errorMessage"></p>
+        </div>
+
+        <h3>生成的代码：</h3>
+        <pre id="codeOutput" class="code-output"></pre>
+
+        <div class="footer">
+            <p>作者推特: <a href="https://x.com/0xXIAOc" target="_blank">https://x.com/0xXIAOc</a></p>
+        </div>
+    </div>
+
+    <script>
+        function generateRandomNumbers() {
+            const input = document.getElementById("inputNumbers").value.trim();
+            const numbers = input.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+
+            const excludeInput = document.getElementById("excludeNumbers").value.trim();
+            const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+
+            const quantity = document.getElementById("quantity").value.trim();
+
+            // 如果没有输入有效的数字或数量
+            if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
+                alert('请输入有效的数字和生成的数量！');
+                return;
+            }
+
+            // 检查是否有重复数字
+            const uniqueNumbers = new Set(numbers);
+            if (uniqueNumbers.size !== numbers.length) {
+                document.getElementById("errorMessage").innerText = '输入的数字有重复，请删除重复数字。';
+                return;
+            }
+
+            // 移除排除的数字
+            const filteredNumbers = numbers.filter(num => !excludeNumbers.includes(num));
+
+            // 显示输入的数字总数
+            document.getElementById("numberCount").innerText = `输入的数字共有 ${numbers.length} 个`;
+
+            // 显示排除的数字
+            document.getElementById("excludedNumbersOutput").innerText = `排除的数字：${excludeNumbers.join(', ')}`;
+
+            // 生成随机数字
+            const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, parseInt(quantity));
+
+            // 显示生成的随机数字
+            document.getElementById("randomNumbersOutput").innerText = randomNumbers.join(', ');
+
+            // 清除错误消息
+            document.getElementById("errorMessage").innerText = '';
+
+            // 显示生成的代码
+            const code = `
+const input = "${input}";
+const numbers = input.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+
+const excludeInput = "${excludeInput}";
+const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+
+const quantity = ${quantity};
+
+if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
+    alert('请输入有效的数字和生成的数量！');
+}
+
+const uniqueNumbers = new Set(numbers);
+if (uniqueNumbers.size !== numbers.length) {
+    alert('输入的数字有重复，请删除重复数字。');
+}
+
+const filteredNumbers = numbers.filter(num => !excludeNumbers.includes(num));
+
+const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, quantity);
+console.log(randomNumbers);  // 输出: ${randomNumbers.join(', ')}
+
+function generateUniqueRandomNumbers(numbers, quantity) {
+    const uniqueNumbers = [];
+    while (uniqueNumbers.length < quantity) {
+        const randomIndex = Math.floor(Math.random() * numbers.length);
+        const randomNum = numbers[randomIndex];
+        if (!uniqueNumbers.includes(randomNum)) {
+            uniqueNumbers.push(randomNum);
+        }
+    }
+    return uniqueNumbers;
+}
+            `;
+            document.getElementById("codeOutput").innerText = code;
+        }
+
+        // 生成不重复的随机数
+        function generateUniqueRandomNumbers(numbers, quantity) {
+            const uniqueNumbers = [];
+
+            while (uniqueNumbers.length < quantity) {
+                const randomIndex = Math.floor(Math.random() * numbers.length);
+                const randomNum = numbers[randomIndex];
+
+                // 确保不重复
+                if (!uniqueNumbers.includes(randomNum)) {
+                    uniqueNumbers.push(randomNum);
+                }
+            }
+
+            return uniqueNumbers;
+        }
+    </script>
+</body>
+</html>
