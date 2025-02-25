@@ -66,8 +66,8 @@
         <h1>随机生成数字（从输入的数字中选择）</h1>
 
         <!-- 输入数字 -->
-        <label for="inputNumbers">请输入数字（用空格分隔，例：1 2 3 5 10 15 33 35 36）：</label>
-        <textarea id="inputNumbers" rows="2" placeholder="例如：1 2 3 5 10 15 33 35 36"></textarea><br/>
+        <label for="inputNumbers">请输入数字（用空格分隔，例：1 2 3 5 10 15 33 35 36，或者指定范围如 1-100）：</label>
+        <textarea id="inputNumbers" rows="2" placeholder="例如：1 2 3 5 10 15 33 35 36，或 1-100"></textarea><br/>
 
         <!-- 输入要排除的数字 -->
         <label for="excludeNumbers">请输入要排除的数字（用空格分隔）：</label>
@@ -104,8 +104,9 @@
     <script>
         function generateRandomNumbers() {
             const input = document.getElementById("inputNumbers").value.trim();
-            const numbers = input.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
-
+            // 处理输入的数字（包括范围）
+            const numbers = parseInputNumbers(input);
+            
             const excludeInput = document.getElementById("excludeNumbers").value.trim();
             const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
 
@@ -133,38 +134,67 @@
             // 显示排除的数字
             document.getElementById("excludedNumbersOutput").innerText = `排除的数字：${excludeNumbers.join(', ')}`;
 
-            // 生成随机数字
+            // 如果要生成的数量超过剩余数字的数量，弹出提示
+            if (quantity > filteredNumbers.length) {
+                const message = `剩余的数字只有 ${filteredNumbers.length} 个，不能生成 ${quantity} 个随机数。请调整生成数量或排除的数字。`;
+                alert(message);
+                return;
+            }
+
+            // 显示生成的随机数字
             const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, parseInt(quantity));
 
             // 显示生成的随机数字
-            document.getElementById("randomNumbersOutput").innerText = randomNumbers.join(', ');
+            document.getElementById("randomNumbersOutput").innerText = randomNumbers.join(' ');
 
             // 清除错误消息
             document.getElementById("errorMessage").innerText = '';
 
             // 显示生成的代码
             const code = `
+// 输入的数字范围或列表
 const input = "${input}";
-const numbers = input.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+const numbers = parseInputNumbers(input);
 
+// 排除的数字列表
 const excludeInput = "${excludeInput}";
 const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
 
+// 要生成的数字数量
 const quantity = ${quantity};
 
+// 检查输入是否有效
 if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
     alert('请输入有效的数字和生成的数量！');
 }
 
-const uniqueNumbers = new Set(numbers);
-if (uniqueNumbers.size !== numbers.length) {
-    alert('输入的数字有重复，请删除重复数字。');
-}
-
+// 排除数字后的结果
 const filteredNumbers = numbers.filter(num => !excludeNumbers.includes(num));
 
+// 生成不重复的随机数字
 const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, quantity);
-console.log(randomNumbers);  // 输出: ${randomNumbers.join(', ')}
+console.log(randomNumbers);  // 输出: ${randomNumbers.join(' ')}
+
+// 解析输入的数字和范围
+function parseInputNumbers(input) {
+    const numberRanges = input.split(' ').map(range => range.trim());
+    let allNumbers = [];
+    
+    numberRanges.forEach(range => {
+        if (range.includes('-')) {
+            const [start, end] = range.split('-').map(num => parseInt(num, 10));
+            if (!isNaN(start) && !isNaN(end) && start <= end) {
+                allNumbers = allNumbers.concat(Array.from({length: end - start + 1}, (_, i) => start + i));
+            }
+        } else {
+            const num = parseInt(range, 10);
+            if (!isNaN(num)) {
+                allNumbers.push(num);
+            }
+        }
+    });
+    return [...new Set(allNumbers)];
+}
 
 function generateUniqueRandomNumbers(numbers, quantity) {
     const uniqueNumbers = [];
@@ -179,6 +209,27 @@ function generateUniqueRandomNumbers(numbers, quantity) {
 }
             `;
             document.getElementById("codeOutput").innerText = code;
+        }
+
+        // 解析输入的数字范围和单独数字
+        function parseInputNumbers(input) {
+            const numberRanges = input.split(' ').map(range => range.trim());
+            let allNumbers = [];
+            
+            numberRanges.forEach(range => {
+                if (range.includes('-')) {
+                    const [start, end] = range.split('-').map(num => parseInt(num, 10));
+                    if (!isNaN(start) && !isNaN(end) && start <= end) {
+                        allNumbers = allNumbers.concat(Array.from({length: end - start + 1}, (_, i) => start + i));
+                    }
+                } else {
+                    const num = parseInt(range, 10);
+                    if (!isNaN(num)) {
+                        allNumbers.push(num);
+                    }
+                }
+            });
+            return [...new Set(allNumbers)];
         }
 
         // 生成不重复的随机数
