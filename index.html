@@ -1,253 +1,232 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随机生成数字（从输入的数字中选择）</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        .output {
-            margin-top: 20px;
-        }
-        .error {
-            color: red;
-        }
-        .code-output {
-            background-color: #f4f4f4;
-            padding: 10px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>随机生成数字（从输入的数字中选择）</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .output {
+      margin-top: 20px;
+    }
+    .error {
+      color: red;
+    }
+    .code-output {
+      background-color: #f4f4f4;
+      padding: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>随机生成数字（从输入的数字中选择）</h1>
+  <div class="container">
+    <h1>随机生成数字（从输入的数字中选择）</h1>
 
-        <!-- 输入数字 -->
-        <label for="inputNumbers">请输入数字（用空格分隔，例：1 2 3 5 10 15 33 35 36，或者指定范围如 1-100）：</label>
-        <textarea id="inputNumbers" rows="2" placeholder="例如：1 2 3 5 10 15 33 35 36，或 1-100"></textarea><br/>
+    <label for="projectName">项目名称（用于记忆和缓存）：</label>
+    <input type="text" id="projectName" placeholder="例如：抽奖1、分组A 等" />
 
-        <!-- 输入要排除的数字 -->
-        <label for="excludeNumbers">请输入要排除的数字（用空格分隔）：</label>
-        <textarea id="excludeNumbers" rows="2" placeholder="例如：5 33"></textarea><br/>
+    <label for="savedProjects">选择历史项目：</label>
+    <select id="savedProjects" onchange="loadSavedProject()">
+      <option value="">-- 选择已保存的项目 --</option>
+    </select>
 
-        <!-- 输入生成的数量 -->
-        <label for="quantity">请输入要生成的数字数量：</label>
-        <input type="number" id="quantity" placeholder="生成的数字数量" min="1" /><br/>
+    <label for="inputNumbers">请输入数字（用空格分隔，例：1 2 3 5 10 15 33 35 36，或者指定范围如 1-100）：</label>
+    <textarea id="inputNumbers" rows="2" placeholder="例如：1 2 3 5 10 15 33 35 36，或 1-100"></textarea><br />
 
-        <button onclick="generateRandomNumbers()">生成随机数字</button>
+    <label for="excludeNumbers">请输入要排除的数字（用空格分隔）：</label>
+    <textarea id="excludeNumbers" rows="2" placeholder="例如：5 33"></textarea><br />
 
-        <!-- 显示结果 -->
-        <div class="output">
-            <h3>一共输入的数字：</h3>
-            <p id="numberCount"></p>
+    <label for="quantity">请输入要生成的数字数量：</label>
+    <input type="number" id="quantity" placeholder="生成的数字数量" min="1" /><br />
 
-            <h3>生成的随机数字：</h3>
-            <p id="randomNumbersOutput"></p>
+    <button onclick="generateRandomNumbers()">生成随机数字</button>
 
-            <h3>排除的数字：</h3>
-            <p id="excludedNumbersOutput"></p>
+    <div class="output">
+      <h3>一共输入的数字：</h3>
+      <p id="numberCount"></p>
 
-            <p class="error" id="errorMessage"></p>
-        </div>
+      <h3>生成的随机数字：</h3>
+      <p id="randomNumbersOutput"></p>
 
-        <h3>生成的代码：</h3>
-        <pre id="codeOutput" class="code-output"></pre>
+      <h3>排除的数字：</h3>
+      <p id="excludedNumbersOutput"></p>
 
-        <div class="footer">
-            <p>作者推特: <a href="https://x.com/0xXIAOc" target="_blank">https://x.com/0xXIAOc</a></p>
-        </div>
+      <p class="error" id="errorMessage"></p>
     </div>
 
-    <script>
-        function generateRandomNumbers() {
-            const input = document.getElementById("inputNumbers").value.trim();
-            // 处理输入的数字（包括范围）
-            const numbers = parseInputNumbers(input);
-            
-            const excludeInput = document.getElementById("excludeNumbers").value.trim();
-            const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+    <h3>生成的代码：</h3>
+    <pre id="codeOutput" class="code-output"></pre>
 
-            const quantity = document.getElementById("quantity").value.trim();
+    <div class="footer">
+      <p>
+        作者推特:
+        <a href="https://x.com/0xXIAOc" target="_blank">https://x.com/0xXIAOc</a>
+      </p>
+    </div>
+  </div>
 
-            // 如果没有输入有效的数字或数量
-            if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
-                alert('请输入有效的数字和生成的数量！');
-                return;
-            }
+  <script>
+    window.onload = function () {
+      populateSavedProjects();
+    };
 
-            // 检查是否有重复数字
-            const uniqueNumbers = new Set(numbers);
-            if (uniqueNumbers.size !== numbers.length) {
-                document.getElementById("errorMessage").innerText = '输入的数字有重复，请删除重复数字。';
-                return;
-            }
+    function populateSavedProjects() {
+      const savedAll = JSON.parse(localStorage.getItem("random-number-tool-projects") || "{}");
+      const select = document.getElementById("savedProjects");
+      select.innerHTML = '<option value="">-- 选择已保存的项目 --</option>';
+      Object.keys(savedAll).forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.innerText = name;
+        select.appendChild(option);
+      });
+    }
 
-            // 移除排除的数字
-            const filteredNumbers = numbers.filter(num => !excludeNumbers.includes(num));
+    function loadSavedProject() {
+      const name = document.getElementById("savedProjects").value;
+      if (!name) return;
+      const savedAll = JSON.parse(localStorage.getItem("random-number-tool-projects") || "{}");
+      const data = savedAll[name];
+      if (!data) return;
+      document.getElementById("projectName").value = name;
+      document.getElementById("inputNumbers").value = data.inputNumbers;
+      document.getElementById("excludeNumbers").value = data.excludeNumbers;
+      document.getElementById("quantity").value = data.quantity;
+      document.getElementById("randomNumbersOutput").innerText = data.randomNumbersOutput;
+      document.getElementById("numberCount").innerText = data.numberCount;
+      document.getElementById("excludedNumbersOutput").innerText = data.excludedNumbersOutput;
+      document.getElementById("codeOutput").innerText = data.codeOutput;
+    }
 
-            // 显示输入的数字总数
-            document.getElementById("numberCount").innerText = `输入的数字共有 ${numbers.length} 个`;
+    function generateRandomNumbers() {
+      const input = document.getElementById("inputNumbers").value.trim();
+      const numbers = parseInputNumbers(input);
 
-            // 显示排除的数字
-            document.getElementById("excludedNumbersOutput").innerText = `排除的数字：${excludeNumbers.join(', ')}`;
+      const excludeInput = document.getElementById("excludeNumbers").value.trim();
+      const excludeNumbers = excludeInput.split(" ").map((num) => parseInt(num.trim(), 10)).filter((num) => !isNaN(num));
 
-            // 如果要生成的数量超过剩余数字的数量，弹出提示
-            if (quantity > filteredNumbers.length) {
-                const message = `剩余的数字只有 ${filteredNumbers.length} 个，不能生成 ${quantity} 个随机数。请调整生成数量或排除的数字。`;
-                alert(message);
-                return;
-            }
+      const quantity = document.getElementById("quantity").value.trim();
+      const projectName = document.getElementById("projectName").value.trim();
 
-            // 显示生成的随机数字
-            const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, parseInt(quantity));
+      if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
+        alert("请输入有效的数字和生成的数量！");
+        return;
+      }
 
-            // 显示生成的随机数字
-            document.getElementById("randomNumbersOutput").innerText = randomNumbers.join(' ');
+      const uniqueNumbers = new Set(numbers);
+      if (uniqueNumbers.size !== numbers.length) {
+        document.getElementById("errorMessage").innerText = "输入的数字有重复，请删除重复数字。";
+        return;
+      }
 
-            // 清除错误消息
-            document.getElementById("errorMessage").innerText = '';
+      const filteredNumbers = numbers.filter((num) => !excludeNumbers.includes(num));
 
-            // 显示生成的代码
-            const code = `
-// 输入的数字范围或列表
-const input = "${input}";
-const numbers = parseInputNumbers(input);
+      document.getElementById("numberCount").innerText = `输入的数字共有 ${numbers.length} 个`;
+      document.getElementById("excludedNumbersOutput").innerText = `排除的数字：${excludeNumbers.join(", ")}`;
 
-// 排除的数字列表
-const excludeInput = "${excludeInput}";
-const excludeNumbers = excludeInput.split(' ').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num));
+      if (quantity > filteredNumbers.length) {
+        alert(`剩余的数字只有 ${filteredNumbers.length} 个，不能生成 ${quantity} 个随机数。请调整生成数量或排除的数字。`);
+        return;
+      }
 
-// 要生成的数字数量
-const quantity = ${quantity};
+      const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, parseInt(quantity));
+      document.getElementById("randomNumbersOutput").innerText = randomNumbers.join(" ");
+      document.getElementById("errorMessage").innerText = "";
 
-// 检查输入是否有效
-if (numbers.length === 0 || isNaN(quantity) || quantity <= 0) {
-    alert('请输入有效的数字和生成的数量！');
-}
+      const code = `// 项目名称: ${projectName}\n// 输入的数字: ${input}\n// 排除的数字: ${excludeInput}\n// 生成数量: ${quantity}\n// 随机结果: ${randomNumbers.join(" ")}`;
+      document.getElementById("codeOutput").innerText = code;
 
-// 排除数字后的结果
-const filteredNumbers = numbers.filter(num => !excludeNumbers.includes(num));
+      if (projectName) {
+        const savedAll = JSON.parse(localStorage.getItem("random-number-tool-projects") || "{}");
+        savedAll[projectName] = {
+          inputNumbers: input,
+          excludeNumbers: excludeInput,
+          quantity,
+          randomNumbersOutput: randomNumbers.join(" "),
+          numberCount: `输入的数字共有 ${numbers.length} 个`,
+          excludedNumbersOutput: `排除的数字：${excludeNumbers.join(", ")}`,
+          codeOutput: code,
+        };
+        localStorage.setItem("random-number-tool-projects", JSON.stringify(savedAll));
+        populateSavedProjects();
+      }
+    }
 
-// 生成不重复的随机数字
-const randomNumbers = generateUniqueRandomNumbers(filteredNumbers, quantity);
-console.log(randomNumbers);  // 输出: ${randomNumbers.join(' ')}
-
-// 解析输入的数字和范围
-function parseInputNumbers(input) {
-    const numberRanges = input.split(' ').map(range => range.trim());
-    let allNumbers = [];
-    
-    numberRanges.forEach(range => {
-        if (range.includes('-')) {
-            const [start, end] = range.split('-').map(num => parseInt(num, 10));
-            if (!isNaN(start) && !isNaN(end) && start <= end) {
-                allNumbers = allNumbers.concat(Array.from({length: end - start + 1}, (_, i) => start + i));
-            }
+    function parseInputNumbers(input) {
+      const numberRanges = input.split(" ").map((range) => range.trim());
+      let allNumbers = [];
+      numberRanges.forEach((range) => {
+        if (range.includes("-")) {
+          const [start, end] = range.split("-").map((num) => parseInt(num, 10));
+          if (!isNaN(start) && !isNaN(end) && start <= end) {
+            allNumbers = allNumbers.concat(Array.from({ length: end - start + 1 }, (_, i) => start + i));
+          }
         } else {
-            const num = parseInt(range, 10);
-            if (!isNaN(num)) {
-                allNumbers.push(num);
-            }
+          const num = parseInt(range, 10);
+          if (!isNaN(num)) {
+            allNumbers.push(num);
+          }
         }
-    });
-    return [...new Set(allNumbers)];
-}
+      });
+      return [...new Set(allNumbers)];
+    }
 
-function generateUniqueRandomNumbers(numbers, quantity) {
-    const uniqueNumbers = [];
-    while (uniqueNumbers.length < quantity) {
+    function generateUniqueRandomNumbers(numbers, quantity) {
+      const uniqueNumbers = [];
+      while (uniqueNumbers.length < quantity) {
         const randomIndex = Math.floor(Math.random() * numbers.length);
         const randomNum = numbers[randomIndex];
         if (!uniqueNumbers.includes(randomNum)) {
-            uniqueNumbers.push(randomNum);
+          uniqueNumbers.push(randomNum);
         }
+      }
+      return uniqueNumbers;
     }
-    return uniqueNumbers;
-}
-            `;
-            document.getElementById("codeOutput").innerText = code;
-        }
-
-        // 解析输入的数字范围和单独数字
-        function parseInputNumbers(input) {
-            const numberRanges = input.split(' ').map(range => range.trim());
-            let allNumbers = [];
-            
-            numberRanges.forEach(range => {
-                if (range.includes('-')) {
-                    const [start, end] = range.split('-').map(num => parseInt(num, 10));
-                    if (!isNaN(start) && !isNaN(end) && start <= end) {
-                        allNumbers = allNumbers.concat(Array.from({length: end - start + 1}, (_, i) => start + i));
-                    }
-                } else {
-                    const num = parseInt(range, 10);
-                    if (!isNaN(num)) {
-                        allNumbers.push(num);
-                    }
-                }
-            });
-            return [...new Set(allNumbers)];
-        }
-
-        // 生成不重复的随机数
-        function generateUniqueRandomNumbers(numbers, quantity) {
-            const uniqueNumbers = [];
-
-            while (uniqueNumbers.length < quantity) {
-                const randomIndex = Math.floor(Math.random() * numbers.length);
-                const randomNum = numbers[randomIndex];
-
-                // 确保不重复
-                if (!uniqueNumbers.includes(randomNum)) {
-                    uniqueNumbers.push(randomNum);
-                }
-            }
-
-            return uniqueNumbers;
-        }
-    </script>
+  </script>
 </body>
 </html>
